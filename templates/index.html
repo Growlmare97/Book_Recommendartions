@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goodreads Book Recommender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <h1>Goodreads Book Recommender</h1>
+    <p>Import your public Goodreads profile, filter books, save favourites, and get a weekly pick.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section>
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+
+    <section class="card">
+      <h2>1) Import Goodreads profile</h2>
+      <form method="post" action="{{ url_for('index') }}" class="row">
+        <input type="text" name="profile" placeholder="Goodreads profile URL or numeric user id" required />
+        <button type="submit">Import</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>2) Filter imported books</h2>
+      <form method="get" action="{{ url_for('index') }}" class="filters">
+        <input type="text" name="title" value="{{ filters.title }}" placeholder="Title contains..." />
+        <input type="text" name="author" value="{{ filters.author }}" placeholder="Author contains..." list="author-list" />
+        <input type="text" name="category" value="{{ filters.category }}" placeholder="Category contains..." list="category-list" />
+        <button type="submit">Apply</button>
+      </form>
+      <datalist id="author-list">
+        {% for author in authors %}
+          <option value="{{ author }}"></option>
+        {% endfor %}
+      </datalist>
+      <datalist id="category-list">
+        {% for category in categories %}
+          <option value="{{ category }}"></option>
+        {% endfor %}
+      </datalist>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Imported books ({{ books|length }})</h2>
+        <ul class="book-list">
+          {% for book in books %}
+            <li>
+              <div>
+                <strong>{{ book.title }}</strong><br />
+                <small>{{ book.author }} • {{ book.category }}</small>
+              </div>
+              <form method="post" action="{{ url_for('add_favourite') }}">
+                <input type="hidden" name="book_id" value="{{ book.id }}" />
+                <button type="submit">☆ Favourite</button>
+              </form>
+            </li>
+          {% else %}
+            <li>No books imported yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Your favourites ({{ favourites|length }})</h2>
+        <ul class="book-list">
+          {% for fav in favourites %}
+            <li>
+              <div>
+                <strong>{{ fav.title }}</strong><br />
+                <small>{{ fav.author }} • {{ fav.category }}</small>
+              </div>
+              <form method="post" action="{{ url_for('remove_favourite') }}">
+                <input type="hidden" name="fav_id" value="{{ fav.id }}" />
+                <button type="submit" class="delete">Remove</button>
+              </form>
+            </li>
+          {% else %}
+            <li>No favourites yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Weekly recommendation</h2>
+      {% if weekly %}
+        <p><strong>{{ weekly.title }}</strong> by {{ weekly.author }} ({{ weekly.category }})</p>
+        <p>{{ weekly.reason }}</p>
+      {% else %}
+        <p>Add favourites and import books to unlock your weekly recommendation.</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Top recommendations</h2>
+      <ol>
+        {% for rec in recommendations %}
+          <li>{{ rec.title }} — {{ rec.author }} ({{ rec.category }})</li>
+        {% else %}
+          <li>No recommendations yet.</li>
+        {% endfor %}
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
