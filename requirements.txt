@@ -1,3 +1,2 @@
-Flask==3.0.3
-requests==2.32.3
-beautifulsoup4==4.12.3
+# No external dependencies required.
+# App runs with Python 3.10+ standard library only.
